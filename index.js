@@ -54,12 +54,21 @@ dialogflow2.setConfiguration = async function (clientEmail, privateKey, language
 
     // set listeners
     Voice.onSpeechStart = (c) => dialogflow2.onListeningStarted(c);
-    Voice.onSpeechEnd = (c) => dialogflow2.onListeningFinished(c);
     Voice.onSpeechVolumeChanged = (c) => dialogflow2.onAudioLevel(c);
+
+    let mostRecentResults = null;
+    Voice.onSpeechEnd = (c) => {
+        if (mostRecentResults != null) {
+            let clonedResult = JSON.parse(JSON.stringify(mostRecentResults.value[0]));
+            dialogflow2.requestQuery(clonedResult, dialogflow2.onResult, dialogflow2.onError);
+            dialogflow2.onListeningFinished(c);
+            mostRecentResults = null;
+        }
+    };
 
     Voice.onSpeechResults = (result) => {
         if (result.value) {
-            dialogflow2.requestQuery(result.value[0], dialogflow2.onResult, dialogflow2.onError);
+            mostRecentResults = result;
         }
     }
 }
