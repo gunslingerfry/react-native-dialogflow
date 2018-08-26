@@ -1,6 +1,6 @@
 'use strict';
 
-import { NativeAppEventEmitter } from 'react-native';
+import { NativeAppEventEmitter, Platform } from 'react-native';
 import { Dialogflow } from './js/Dialogflow';
 import { Dialogflow_V2 } from './js/Dialogflow_V2';
 import Voice from './js/RCTVoice';
@@ -56,19 +56,28 @@ dialogflow2.setConfiguration = async function (clientEmail, privateKey, language
     Voice.onSpeechStart = (c) => dialogflow2.onListeningStarted(c);
     Voice.onSpeechVolumeChanged = (c) => dialogflow2.onAudioLevel(c);
 
-    let mostRecentResults = null;
-    Voice.onSpeechEnd = (c) => {
+    function doQuery() {
         if (mostRecentResults != null) {
             let clonedResult = JSON.parse(JSON.stringify(mostRecentResults.value[0]));
             dialogflow2.requestQuery(clonedResult, dialogflow2.onResult, dialogflow2.onError);
-            dialogflow2.onListeningFinished(c);
             mostRecentResults = null;
         }
+    }
+
+    let mostRecentResults = null;
+    Voice.onSpeechEnd = (c) => {
+        if (Platform.OS === 'ios') {
+            doQuery();
+        }
+        dialogflow2.onListeningFinished(c);
     };
 
     Voice.onSpeechResults = (result) => {
         if (result.value) {
             mostRecentResults = result;
+        }
+        if (Platform.OS === 'android') {
+            doQuery();
         }
     }
 }
