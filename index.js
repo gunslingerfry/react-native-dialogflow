@@ -53,8 +53,8 @@ dialogflow2.setConfiguration = async function (clientEmail, privateKey, language
     dialogflow2.sessionId = dialogflow2.sessionId ? dialogflow2.sessionId : dialogflow2.guid();
 
     // set listeners
-    Voice.onSpeechStart = (c) => dialogflow2.onListeningStarted(c);
-    Voice.onSpeechVolumeChanged = (c) => dialogflow2.onAudioLevel(c);
+    Voice.onSpeechStart = () => (c) => dialogflow2.onListeningStarted(c);
+    Voice.onSpeechVolumeChanged = () => (c) => dialogflow2.onAudioLevel(c);
 
     function doQuery() {
         if (mostRecentResults != null) {
